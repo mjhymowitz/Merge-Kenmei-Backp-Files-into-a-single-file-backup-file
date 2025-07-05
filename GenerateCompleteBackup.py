@@ -124,19 +124,20 @@ def recursive_merge(files, idx, master_df, history_df, master_path):
 
   return recursive_merge(files, idx + 1, master_df, history_df, master_path)
 
+def main():
+  # Setup
+  master_backup_filename = "MasterBackup.xlsx"
 
-# Setup
-master_backup_filename = "MasterBackup.xlsx"
+  # Step 1: Get all CSVs and sort them by datetime extracted from filename
+  all_csvs = get_csv_file_path()
 
-# Step 1: Get all CSVs and sort them by datetime extracted from filename
-all_csvs = get_csv_file_path()
+  # Step 2: Load existing master and history
+  loaded = load_history(master_backup_filename)
+  master_df = loaded["MasterData"]
+  history_df = loaded["ImportHistory"]
 
-# Step 2: Load existing master and history
-loaded = load_history(master_backup_filename)
-master_df = loaded["MasterData"]
-history_df = loaded["ImportHistory"]
+  # Step 3: Start recursive import
+  recursive_merge(all_csvs, 0, master_df, history_df, master_backup_filename)
 
-# Step 3: Start recursive import
-recursive_merge(all_csvs, 0, master_df, history_df, master_backup_filename)
-
-
+if __name__ == "__main__":
+  main()
