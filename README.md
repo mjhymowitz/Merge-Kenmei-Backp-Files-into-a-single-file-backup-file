@@ -5,11 +5,11 @@
 ## Setup
 - Open Terminal/Command Prompt in this project and execute the following code depending on the system you use.
 ```Terminal
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate        # On Linux/macOS
 .venv\Scripts\activate.bat       # On Windows Command Prompt
 .venv\Scripts\Activate.ps1       # On Windows PowerShell
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 - Verify this by running `which python` and it should return `${path to project}/.venv/bin/python`
 
