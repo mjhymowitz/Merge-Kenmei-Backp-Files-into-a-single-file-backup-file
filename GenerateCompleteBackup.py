@@ -3,8 +3,7 @@ import pandas as pd
 import os
 import datetime
 
-# get list of file name with path to csv
-# ['./Raw-Backups/kenmei-export-2022-08-27T17_19_00Z.csv']
+# Get list of file name with path to csv
 def get_csv_file_path():
   csv_file_list = sorted(os.listdir(path="./Raw-Backups/"))
   location = "./Raw-Backups/{}"
@@ -14,7 +13,7 @@ def get_csv_file_path():
     if file_name.endswith(".csv")
   ]
 
-# recieve filename and return datetime of file creation
+# Recieve filename and return datetime of file creation
 def parse_datetime_from_filename(filename):
   try:
     # Extract datetime string from filename: 'kenmei-export-2022-08-27T17_19_00Z.csv'
@@ -23,7 +22,7 @@ def parse_datetime_from_filename(filename):
   except Exception as e:
     raise ValueError(f"Could not parse datetime from filename '{filename}': {e}")
 
-# read MasterBackup.xlsx file, if doesn't exist create MasterBackup.xlsx
+# Read merged backup file, if merged backup file doesn't exist create it
 def load_history(filepath):
   EXPECTED_COLUMNS = [
     "title", "status", "score", "last_volume_read", "last_chapter_read",
@@ -34,15 +33,15 @@ def load_history(filepath):
   if os.path.exists(filepath):
     sheet_data = pd.read_excel(filepath, sheet_name=None)
 
-    # Pad MasterData if any columns are missing
-    if "MasterData" in sheet_data:
-      df = sheet_data["MasterData"]
+    # Pad Data if any columns are missing
+    if "Data" in sheet_data:
+      df = sheet_data["Data"]
       for col in EXPECTED_COLUMNS:
         if col not in df.columns:
           df[col] = pd.NA
-      sheet_data["MasterData"] = df[EXPECTED_COLUMNS]  # reorder columns
+      sheet_data["Data"] = df[EXPECTED_COLUMNS]  # reorder columns
     else:
-      sheet_data["MasterData"] = pd.DataFrame(columns=EXPECTED_COLUMNS)
+      sheet_data["Data"] = pd.DataFrame(columns=EXPECTED_COLUMNS)
 
     # Ensure ImportHistory at least has default structure
     if "ImportHistory" not in sheet_data:
@@ -52,11 +51,11 @@ def load_history(filepath):
 
   else:
     return {
-      "MasterData": pd.DataFrame(columns=EXPECTED_COLUMNS),
+      "Data": pd.DataFrame(columns=EXPECTED_COLUMNS),
       "ImportHistory": pd.DataFrame(columns=["filename", "file_datetime", "imported_at"])
     }
 
-# merge source_to_be_removed_at and source_removed_at columns and delete source_removed_at column
+# Merge source_to_be_removed_at and source_removed_at columns and delete source_removed_at column
 def merge_source_columns(df):
   # If both columns exist, merge them
   if "source_removed_at" in df.columns and "source_to_be_removed_at" in df.columns:
@@ -67,13 +66,13 @@ def merge_source_columns(df):
 
   return df
 
-# save MasterBackup.xlsx file
+# Save merged backup file
 def save_master(filepath, master_df, history_df):
   with pd.ExcelWriter(filepath, engine='openpyxl', mode='w') as writer:
-    master_df.to_excel(writer, index=False, sheet_name="MasterData")
+    master_df.to_excel(writer, index=False, sheet_name="Data")
     history_df.to_excel(writer, index=False, sheet_name="ImportHistory")
 
-# Recursively Update MasterBackup content
+# Recursively update merged backup file
 def recursive_merge(files, idx, master_df, history_df, master_path):
   if idx >= len(files):
     print("✅ All files processed.")
@@ -125,19 +124,20 @@ def recursive_merge(files, idx, master_df, history_df, master_path):
   return recursive_merge(files, idx + 1, master_df, history_df, master_path)
 
 def main():
-  # Setup
-  master_backup_filename = "MasterBackup.xlsx"
+  # Define merged backup file
+  backup_filename = "MasterBackup"
+  backup_file = f"{backup_filename}.xlsx"
 
   # Step 1: Get all CSVs and sort them by datetime extracted from filename
   all_csvs = get_csv_file_path()
 
   # Step 2: Load existing master and history
-  loaded = load_history(master_backup_filename)
-  master_df = loaded["MasterData"]
+  loaded = load_history(backup_file)
+  master_df = loaded["Data"]
   history_df = loaded["ImportHistory"]
 
   # Step 3: Start recursive import
-  recursive_merge(all_csvs, 0, master_df, history_df, master_backup_filename)
+  recursive_merge(all_csvs, 0, master_df, history_df, backup_file)
 
 if __name__ == "__main__":
   main()
