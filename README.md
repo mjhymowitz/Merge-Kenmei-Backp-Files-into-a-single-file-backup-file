@@ -3,6 +3,10 @@
 
 
 ## Setup
+- Create A `Raw-Backup` folder in this project
+- Copy over all Kenmei csv exports into `Raw-Backup`
+  - All files should be the original name exported from Kenmei
+
 - Open Terminal/Command Prompt in this project and execute the following code depending on the system you use.
 ```Terminal
 python3 -m venv .venv
